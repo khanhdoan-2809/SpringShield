@@ -3,7 +3,7 @@ name: cicd pipeline
 on:
   pull_request:
     branches:
-      - dev
+      - develop
     types:
       - opened
       - synchronize
