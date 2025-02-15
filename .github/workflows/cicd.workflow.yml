@@ -10,7 +10,7 @@ on:
       - reopened
   push:
     branches:
-      - dev
+      - develop
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
