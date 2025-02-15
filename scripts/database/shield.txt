@@ -1,34 +1,38 @@
 -- Users Table
 CREATE TABLE users (
-    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    created_at DATETIME DEFAULT GETDATE()
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Roles Table
 CREATE TABLE roles (
-    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     name VARCHAR(50) UNIQUE NOT NULL
 );
 
--- User-Roles
+-- User-Roles Table
 CREATE TABLE user_roles (
-    user_id UNIQUEIDENTIFIER REFERENCES users(id) ON DELETE CASCADE,
-    role_id UNIQUEIDENTIFIER REFERENCES roles(id) ON DELETE CASCADE,
-    PRIMARY KEY (user_id, role_id)
+    user_id CHAR(36),
+    role_id CHAR(36),
+    PRIMARY KEY (user_id, role_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
 );
 
 -- Permissions Table
 CREATE TABLE permissions (
-    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     name VARCHAR(50) UNIQUE NOT NULL
 );
 
--- Role-Permissions
+-- Role-Permissions Table
 CREATE TABLE role_permissions (
-    role_id UNIQUEIDENTIFIER REFERENCES roles(id) ON DELETE CASCADE,
-    permission_id UNIQUEIDENTIFIER REFERENCES permissions(id) ON DELETE CASCADE,
-    PRIMARY KEY (role_id, permission_id)
+    role_id CHAR(36),
+    permission_id CHAR(36),
+    PRIMARY KEY (role_id, permission_id),
+    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
+    FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE
 );

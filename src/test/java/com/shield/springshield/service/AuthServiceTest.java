@@ -39,7 +39,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    void shouldAuthenticateAndGenerateToken_WhenValidCredentials() {
+    void testAuthenticateAndGenerateToken_WhenValidCredentials() {
         // Given
         String rawPassword = "password";
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
@@ -60,7 +60,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    void shouldThrowException_WhenInvalidCredentials() {
+    void throwException_WhenInvalidCredentials() {
         // Given
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
         when(passwordEncoder.matches("wrongPassword", testUser.getPassword())).thenReturn(false);
@@ -78,7 +78,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    void shouldCreateANewUser_WhenValidParameters() {
+    void testCreateANewUser_WhenValidParameters() {
         // Given
         String username = "newUser";
         String rawPassword = "password";
@@ -95,5 +95,26 @@ public class AuthServiceTest {
 
         // Verify
         verify(userRepository, times(1)).save(any(User.class));
+    }
+
+    @Test
+    void testRegisterUser_WhenUserAlreadyExists() {
+        // Arrange
+        String username = "newUser";
+        String rawPassword = "password";
+        String role = "USER";
+        User user = User.builder().id(1L).username(username).build();
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+
+        // Act
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            authService.registerUser(username, rawPassword, role);
+        });
+
+        // Assert
+        assertEquals("User already exists", exception.getMessage());
+
+        // Verify
+        verify(userRepository, never()).save(any(User.class));
     }
 }
