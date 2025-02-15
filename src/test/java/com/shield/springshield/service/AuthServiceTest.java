@@ -46,10 +46,10 @@ public class AuthServiceTest {
         when(passwordEncoder.matches(rawPassword, testUser.getPassword())).thenReturn(true);
         when(jwtUtil.generateToken(testUser.getUsername())).thenReturn("mocked-jwt-token");
 
-        // When
+        // Act
         String token = authService.authenticateUser("testuser", rawPassword);
 
-        // Then
+        // Assert
         assertNotNull(token);
         assertEquals("mocked-jwt-token", token);
 
@@ -65,15 +65,35 @@ public class AuthServiceTest {
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
         when(passwordEncoder.matches("wrongPassword", testUser.getPassword())).thenReturn(false);
 
-        // When
+        // Act
         Exception exception = assertThrows(RuntimeException.class, () -> authService.authenticateUser("testuser", "wrongPassword"));
 
-        // Then
+        // Assert
         assertEquals("Invalid credentials", exception.getMessage());
 
         // Verify
         verify(userRepository, times(1)).findByUsername("testuser");
         verify(passwordEncoder, times(1)).matches("wrongPassword", testUser.getPassword());
         verify(jwtUtil, never()).generateToken(any());
+    }
+
+    @Test
+    void shouldCreateANewUser_WhenValidParameters() {
+        // Given
+        String username = "newUser";
+        String rawPassword = "password";
+        String encodedPassword = "encodedPassword";
+        String role = "USER";
+        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
+        when(passwordEncoder.encode(rawPassword)).thenReturn(encodedPassword);
+
+        // Act
+        String newUser = authService.registerUser(username, rawPassword, role);
+
+        // Assert
+        assertEquals("User registered successfully", newUser);
+
+        // Verify
+        verify(userRepository, times(1)).save(any(User.class));
     }
 }
