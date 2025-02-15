@@ -1,0 +1,34 @@
+-- Users Table
+CREATE TABLE users (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    created_at DATETIME DEFAULT GETDATE()
+);
+
+-- Roles Table
+CREATE TABLE roles (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    name VARCHAR(50) UNIQUE NOT NULL
+);
+
+-- User-Roles
+CREATE TABLE user_roles (
+    user_id UNIQUEIDENTIFIER REFERENCES users(id) ON DELETE CASCADE,
+    role_id UNIQUEIDENTIFIER REFERENCES roles(id) ON DELETE CASCADE,
+    PRIMARY KEY (user_id, role_id)
+);
+
+-- Permissions Table
+CREATE TABLE permissions (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    name VARCHAR(50) UNIQUE NOT NULL
+);
+
+-- Role-Permissions
+CREATE TABLE role_permissions (
+    role_id UNIQUEIDENTIFIER REFERENCES roles(id) ON DELETE CASCADE,
+    permission_id UNIQUEIDENTIFIER REFERENCES permissions(id) ON DELETE CASCADE,
+    PRIMARY KEY (role_id, permission_id)
+);
