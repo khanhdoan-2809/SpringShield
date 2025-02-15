@@ -14,10 +14,10 @@ import javax.crypto.SecretKey;
 public class JwtUtil {
 
     private final SecretKey secretKey;
-    private final long tokenValidity; // Token validity duration in milliseconds
+    private final long tokenValidity;
 
     public JwtUtil(@Value("${jwt.secret}") String secret,
-                   @Value("${jwt.tokenValidity}") long tokenValidity) { // Inject token validity
+                   @Value("${jwt.validity}") long tokenValidity) {
         this.secretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
         this.tokenValidity = tokenValidity;
     }
