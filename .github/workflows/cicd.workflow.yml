@@ -4,7 +4,6 @@ on:
   pull_request:
     branches:
       - dev
-      - feature/*
     types:
       - opened
       - synchronize
@@ -34,7 +33,7 @@ jobs:
 
       - name: Upload Build Artifact
         id: upload-artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifact
           path: target/*.jar
@@ -54,7 +53,7 @@ jobs:
           cache: 'maven'
 
       - name: Download Build Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-artifact
 
