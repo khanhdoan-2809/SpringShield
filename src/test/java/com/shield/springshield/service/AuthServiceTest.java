@@ -1,6 +1,9 @@
 package com.shield.springshield.service;
 
-import com.shield.springshield.entity.User;
+import com.shield.springshield.model.dto.UserCreateDTO;
+import com.shield.springshield.model.entity.Role;
+import com.shield.springshield.model.entity.User;
+import com.shield.springshield.repository.RoleRepository;
 import com.shield.springshield.repository.UserRepository;
 import com.shield.springshield.util.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -21,6 +25,9 @@ public class AuthServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private RoleRepository roleRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -35,7 +42,7 @@ public class AuthServiceTest {
 
     @BeforeEach
     void setUp() {
-        testUser = User.builder().id(1L).username("testuser").password("encodedPassword").role("USER").build();
+        testUser = User.builder().id(UUID.randomUUID().toString()).username("testuser").password("encodedPassword").build();
     }
 
     @Test
@@ -78,17 +85,19 @@ public class AuthServiceTest {
     }
 
     @Test
-    void testCreateANewUser_WhenValidParameters() {
+    void testRegisterUser_WhenValidParameters() {
         // Given
-        String username = "newUser";
-        String rawPassword = "password";
-        String encodedPassword = "encodedPassword";
-        String role = "USER";
-        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
-        when(passwordEncoder.encode(rawPassword)).thenReturn(encodedPassword);
+        UserCreateDTO userCreateDTO = new UserCreateDTO("john_doe", "john@example.com", "password123", "USER");
+        Role role = new Role();
+        role.setName("USER");
+        role.setId(UUID.randomUUID().toString());
+        when(roleRepository.findByName(userCreateDTO.getRole())).thenReturn(Optional.of(role));
+        when(userRepository.findByEmail(userCreateDTO.getEmail())).thenReturn(Optional.empty());
+        when(userRepository.findByUsername(userCreateDTO.getUsername())).thenReturn(Optional.empty());
+        when(passwordEncoder.encode(userCreateDTO.getPassword())).thenReturn("encodedPassword");
 
         // Act
-        String newUser = authService.registerUser(username, rawPassword, role);
+        String newUser = authService.registerUser(userCreateDTO);
 
         // Assert
         assertEquals("User registered successfully", newUser);
@@ -100,15 +109,12 @@ public class AuthServiceTest {
     @Test
     void testRegisterUser_WhenUserAlreadyExists() {
         // Arrange
-        String username = "newUser";
-        String rawPassword = "password";
-        String role = "USER";
-        User user = User.builder().id(1L).username(username).build();
-        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+        UserCreateDTO userCreateDTO = new UserCreateDTO("john@example.com", "john_doe", "password123", "user");
+        when(userRepository.findByEmail(userCreateDTO.getEmail())).thenReturn(Optional.of(new User()));
 
         // Act
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            authService.registerUser(username, rawPassword, role);
+            authService.registerUser(userCreateDTO);
         });
 
         // Assert

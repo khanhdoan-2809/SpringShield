@@ -1,11 +1,19 @@
 package com.shield.springshield.service;
 
-import com.shield.springshield.entity.User;
+import com.shield.springshield.model.dto.UserCreateDTO;
+import com.shield.springshield.model.entity.Role;
+import com.shield.springshield.model.entity.User;
+import com.shield.springshield.repository.RoleRepository;
 import com.shield.springshield.repository.UserRepository;
 import com.shield.springshield.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.UUID;
 
 @Service
 public class AuthService {
@@ -14,17 +22,29 @@ public class AuthService {
     private UserRepository userRepository;
 
     @Autowired
+    private RoleRepository roleRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
     private JwtUtil jwtUtil;
 
-    public String registerUser(String username, String password, String role) {
-        if (userRepository.findByUsername(username).isPresent()) {
+    public String registerUser(UserCreateDTO userCreateDTO) {
+        if (userRepository.findByEmail(userCreateDTO.getEmail()).isPresent() || userRepository.findByUsername(userCreateDTO.getUsername()).isPresent()) {
             throw new RuntimeException("User already exists");
         }
 
-        User newUser = User.builder().username(username).password(passwordEncoder.encode(password)).role(role).build();
+        Role role = roleRepository.findByName(userCreateDTO.getRole()).orElseThrow(() -> new RuntimeException("Role not found"));
+
+        User newUser = User.builder()
+                .id(UUID.randomUUID().toString())
+                .email(userCreateDTO.getEmail())
+                .username(userCreateDTO.getUsername())
+                .password(passwordEncoder.encode(userCreateDTO.getPassword()))
+                .createdAt(new Date())
+                .roles(new HashSet<Role>(Arrays.asList(role)))
+                .build();
         userRepository.save(newUser);
         return "User registered successfully";
     }
